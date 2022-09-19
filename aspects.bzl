@@ -30,6 +30,9 @@ load(
     "OBJCPP_COMPILE_ACTION_NAME",
     "OBJC_COMPILE_ACTION_NAME",
 )
+load("@rules_cuda//cuda/private:toolchain.bzl", "find_cuda_toolchain")
+load("@rules_cuda//cuda/private:action_names.bzl", CUDA_COMPILE_ACTION_NAME = "CUDA_COMPILE")
+load("@rules_cuda//cuda/private:cuda_helper.bzl", "cuda_helper")
 
 CompilationAspect = provider()
 
@@ -61,7 +64,20 @@ _objc_rules = [
     "objc_binary",
 ]
 
-_all_rules = _cc_rules + _objc_rules
+_cuda_header_extension = [
+    "cuh",
+    "hpp",
+]
+
+_cuda_extension = [
+    "cu",
+] + _cuda_header_extension
+
+_cuda_rules = [
+    "cuda_library",
+]
+
+_all_rules = _cc_rules + _objc_rules + _cuda_rules
 
 # Temporary fix for https://github.com/grailbio/bazel-compilation-database/issues/101.
 DISABLED_FEATURES = [
@@ -75,6 +91,9 @@ def _is_cpp_target(srcs):
 
 def _is_objcpp_target(srcs):
     return any([src.extension == "mm" for src in srcs])
+
+def _is_cuda_target(srcs):
+    return any([src.extension in _cuda_extension for src in srcs])
 
 def _sources(ctx, target):
     srcs = []
@@ -269,6 +288,50 @@ def _objc_compile_commands(ctx, target, feature_configuration, cc_toolchain):
         ))
     return compile_commands
 
+def _cuda_compile_commands(ctx, target, feature_configuration, cuda_toolchain):
+    cuda_common = cuda_helper.create_common(ctx)
+
+    compiler = str(
+        cuda_helper.get_tool_for_action(
+            info = feature_configuration,
+            action_name = CUDA_COMPILE_ACTION_NAME,
+        ),
+    )
+    compile_flags = cuda_common.compile_flags
+
+    srcs = _sources(ctx, target)
+
+    is_cuda_target = _is_cuda_target(srcs)
+
+    compiler_options = None
+    if is_cuda_target:
+        compile_variables = cuda_helper.create_compile_variables(
+            feature_configuration = feature_configuration,
+            cuda_toolchain = cuda_toolchain,
+            compile_flags = cuda_common.compile_flags,
+        )
+        compiler_options = cuda_helper.get_command_line(
+            info = feature_configuration,
+            action = CUDA_COMPILE_ACTION_NAME,
+            value = compile_variables,
+        )
+        compile_flags.append("-x cu")  # Force language mode for header files.
+
+    compile_flags.extend(ctx.rule.attr.copts if "copts" in dir(ctx.rule.attr) else [])
+
+    cmdline_list = [compiler]
+    cmdline_list.extend(compiler_options)
+    cmdline_list.extend(compile_flags)
+    cmdline = " ".join(cmdline_list)
+
+    compile_commands = []
+    for src in srcs:
+        compile_commands.append(struct(
+            cmdline = cmdline + " -c " + src.path,
+            src = src,
+        ))
+    return compile_commands
+
 def _compilation_database_aspect_impl(target, ctx):
     # Write the compile commands for this target to a file, and return
     # the commands for the transitive closure.
@@ -307,19 +370,29 @@ def _compilation_database_aspect_impl(target, ctx):
     compilation_db = []
 
     cc_toolchain = find_cpp_toolchain(ctx)
-    feature_configuration = cc_common.configure_features(
+    cc_feature_configuration = cc_common.configure_features(
         ctx = ctx,
         cc_toolchain = cc_toolchain,
         requested_features = ctx.features,
         unsupported_features = ctx.disabled_features + DISABLED_FEATURES,
     )
 
+    cuda_toolchain = find_cuda_toolchain(ctx)
+    cuda_feature_configuration = cuda_helper.configure_features(
+        ctx = ctx,
+        cuda_toolchain = cuda_toolchain,
+        requested_features = ctx.features,
+        unsupported_features = ctx.disabled_features + DISABLED_FEATURES,
+    )
+
     if ctx.rule.kind in _cc_rules:
-        compile_commands = _cc_compile_commands(ctx, target, feature_configuration, cc_toolchain)
+        compile_commands = _cc_compile_commands(ctx, target, cc_feature_configuration, cc_toolchain)
     elif ctx.rule.kind in _objc_rules:
-        compile_commands = _objc_compile_commands(ctx, target, feature_configuration, cc_toolchain)
+        compile_commands = _objc_compile_commands(ctx, target, cc_feature_configuration, cc_toolchain)
+    elif ctx.rule.kind in _cuda_rules:
+        compile_commands = _cuda_compile_commands(ctx, target, cuda_feature_configuration, cuda_toolchain)
     else:
-        fail("unsupported rule: " + ctx.rule.kind)
+        fail("Unsupported rule: " + ctx.rule.kind)
 
     srcs = []
     for compile_command in compile_commands:
