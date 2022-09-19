@@ -20,7 +20,7 @@ def _compilation_database_impl(ctx):
 
     if ctx.attr.disable:
         ctx.actions.write(output = ctx.outputs.filename, content = "[]\n")
-        return
+        return []
 
     compilation_db = []
     all_headers = []
@@ -36,6 +36,11 @@ def _compilation_database_impl(ctx):
     content = json.encode(compilation_db.to_list())
     content = content.replace("__EXEC_ROOT__", exec_root)
     content = content.replace("-isysroot __BAZEL_XCODE_SDKROOT__", "")
+    # Format json
+    content = ",\n".join(content.split(","))
+    content = content.replace("[", "[\n")
+    content = content.replace("]", "\n]\n")
+
     ctx.actions.write(output = ctx.outputs.filename, content = content)
 
     return [
