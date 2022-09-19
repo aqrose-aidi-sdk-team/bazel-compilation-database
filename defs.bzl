@@ -36,6 +36,9 @@ def _compilation_database_impl(ctx):
     content = json.encode(compilation_db.to_list())
     content = content.replace("__EXEC_ROOT__", exec_root)
     content = content.replace("-isysroot __BAZEL_XCODE_SDKROOT__", "")
+    for flag in ctx.attr.filter_flags:
+        content = content.replace(flag, "")
+
     # Format json
     content = ",\n".join(content.split(","))
     content = content.replace("[", "[\n")
@@ -69,6 +72,12 @@ _compilation_database = rule(
         ),
         "filename": attr.output(
             doc = "Name of the generated compilation database.",
+        ),
+        "filter_flags": attr.string_list(
+            default = [
+                "-fno-canonical-system-headers",
+            ],
+            doc = "Filter the flags in the compilation command that clang does not support.",
         ),
     },
     implementation = _compilation_database_impl,
