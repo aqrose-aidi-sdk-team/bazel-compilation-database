@@ -13,6 +13,15 @@
 # limitations under the License.
 
 load("@com_grail_bazel_compdb//:tools.bzl", "setup_tools")
+load("@bazel_tools//tools/build_defs/repo:utils.bzl", "maybe")
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
 def bazel_compdb_deps():
     setup_tools()
+
+    maybe(
+        name = "rules_cuda",
+        repo_rule = http_archive,
+        sha256 = "99914664a13dd441837fba8fceb07a125a945e4a750facbbfe85a8ec1fbd9c3c",
+        urls = ["https://github.com/cloudhan/rules_cuda/archive/6f05e4d11b06ee542509e5ec65554118063351bf.tar.gz"],
+    )

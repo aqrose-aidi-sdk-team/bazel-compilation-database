@@ -35,12 +35,6 @@ load("@rules_cuda//cuda/private:action_names.bzl", CUDA_COMPILE_ACTION_NAME = "C
 load("@rules_cuda//cuda/private:cuda_helper.bzl", "cuda_helper")
 load("@com_grail_bazel_config_compdb//:config.bzl", "cuda_enable")
 
-if cuda_enable:
-    load("@rules_cuda//cuda:deps.bzl", "register_detected_cuda_toolchains", "rules_cuda_deps")
-
-    rules_cuda_deps()
-    register_detected_cuda_toolchains()
-
 CompilationAspect = provider()
 
 _cpp_header_extensions = [
@@ -384,20 +378,22 @@ def _compilation_database_aspect_impl(target, ctx):
         unsupported_features = ctx.disabled_features + DISABLED_FEATURES,
     )
 
-    cuda_toolchain = find_cuda_toolchain(ctx)
-    cuda_feature_configuration = cuda_helper.configure_features(
-        ctx = ctx,
-        cuda_toolchain = cuda_toolchain,
-        requested_features = ctx.features,
-        unsupported_features = ctx.disabled_features + DISABLED_FEATURES,
-    )
+    if cuda_enable:
+        cuda_toolchain = find_cuda_toolchain(ctx)
+        cuda_feature_configuration = cuda_helper.configure_features(
+            ctx = ctx,
+            cuda_toolchain = cuda_toolchain,
+            requested_features = ctx.features,
+            unsupported_features = ctx.disabled_features + DISABLED_FEATURES,
+        )
+
+        if ctx.rule.kind in _cuda_rules:
+            compile_commands = _cuda_compile_commands(ctx, target, cuda_feature_configuration, cuda_toolchain)
 
     if ctx.rule.kind in _cc_rules:
         compile_commands = _cc_compile_commands(ctx, target, cc_feature_configuration, cc_toolchain)
     elif ctx.rule.kind in _objc_rules:
         compile_commands = _objc_compile_commands(ctx, target, cc_feature_configuration, cc_toolchain)
-    elif cuda_enable and ctx.rule.kind in _cuda_rules:
-        compile_commands = _cuda_compile_commands(ctx, target, cuda_feature_configuration, cuda_toolchain)
     else:
         fail("Unsupported rule: " + ctx.rule.kind)
 
