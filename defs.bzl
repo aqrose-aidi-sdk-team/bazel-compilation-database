@@ -13,6 +13,7 @@
 # limitations under the License.
 
 load("@com_grail_bazel_compdb//:aspects.bzl", "CompilationAspect", "compilation_database_aspect")
+load("@com_grail_bazel_config_compdb//:config.bzl", "global_filter_flags")
 
 def _compilation_database_impl(ctx):
     # Generates a single compile_commands.json file with the
@@ -35,11 +36,18 @@ def _compilation_database_impl(ctx):
 
     content = json.encode(compilation_db.to_list())
     content = content.replace("__EXEC_ROOT__", exec_root)
-    content = content.replace("-isysroot __BAZEL_XCODE_SDKROOT__", "")
-    for flag in ctx.attr.filter_flags:
+
+    filter_flags = ctx.attr.filter_flags
+    filter_flags.extend(global_filter_flags)
+
+    for flag in filter_flags:
         content = content.replace(flag, "")
 
-    # Format json
+    # For windows, replace msvc compilation command to clang.
+    if ctx.os.name.lower().startswith("windows") == True:
+        content.replace("/std:", "-std=")
+
+    # Format json.
     content = ",\n".join(content.split(","))
     content = content.replace("[", "[\n")
     content = content.replace("]", "\n]\n")
@@ -74,9 +82,7 @@ _compilation_database = rule(
             doc = "Name of the generated compilation database.",
         ),
         "filter_flags": attr.string_list(
-            default = [
-                "-fno-canonical-system-headers",
-            ],
+            default = [],
             doc = "Filter the flags in the compilation command that clang does not support.",
         ),
     },

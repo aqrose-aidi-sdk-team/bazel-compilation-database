@@ -33,6 +33,7 @@ load(
 load("@rules_cuda//cuda/private:toolchain.bzl", "find_cuda_toolchain")
 load("@rules_cuda//cuda/private:action_names.bzl", CUDA_COMPILE_ACTION_NAME = "CUDA_COMPILE")
 load("@rules_cuda//cuda/private:cuda_helper.bzl", "cuda_helper")
+load("@com_grail_bazel_config_compdb//:config.bzl", "cuda_enable")
 
 CompilationAspect = provider()
 
@@ -389,7 +390,7 @@ def _compilation_database_aspect_impl(target, ctx):
         compile_commands = _cc_compile_commands(ctx, target, cc_feature_configuration, cc_toolchain)
     elif ctx.rule.kind in _objc_rules:
         compile_commands = _objc_compile_commands(ctx, target, cc_feature_configuration, cc_toolchain)
-    elif ctx.rule.kind in _cuda_rules:
+    elif cuda_enable and ctx.rule.kind in _cuda_rules:
         compile_commands = _cuda_compile_commands(ctx, target, cuda_feature_configuration, cuda_toolchain)
     else:
         fail("Unsupported rule: " + ctx.rule.kind)
