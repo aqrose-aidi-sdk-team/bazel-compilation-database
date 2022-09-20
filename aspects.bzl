@@ -35,6 +35,12 @@ load("@rules_cuda//cuda/private:action_names.bzl", CUDA_COMPILE_ACTION_NAME = "C
 load("@rules_cuda//cuda/private:cuda_helper.bzl", "cuda_helper")
 load("@com_grail_bazel_config_compdb//:config.bzl", "cuda_enable")
 
+if cuda_enable:
+    load("@rules_cuda//cuda:deps.bzl", "register_detected_cuda_toolchains", "rules_cuda_deps")
+
+    rules_cuda_deps()
+    register_detected_cuda_toolchains()
+
 CompilationAspect = provider()
 
 _cpp_header_extensions = [
