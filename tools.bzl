@@ -15,10 +15,8 @@
 def _bazel_output_base_util_impl(rctx):
     if rctx.os.name.lower().startswith("windows") == True:
         res = rctx.execute(["cmd", "/c", "echo", "%cd%"])
-    elif rctx.os.name.startswith("linux") == True:
-        res = rctx.execute(["pwd"])
     else:
-        fail("Unknown operating system combo: os = {}".format(rctx.os.name))
+        res = rctx.execute(["pwd"])
 
     if res.return_code != 0:
         fail("Getting output base failed (%d): %s" % (res.return_code, res.stderr))
