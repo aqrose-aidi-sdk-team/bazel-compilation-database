@@ -12,11 +12,45 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-load("@rules_cuda//cuda:deps.bzl", "register_detected_cuda_toolchains", "rules_cuda_deps")
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+load("@bazel_tools//tools/build_defs/repo:utils.bzl", "maybe")
+
+_cuda_config = """
+load("@rules_cuda//cuda:deps.bzl", _register_detected_cuda_toolchains = "register_detected_cuda_toolchains", _rules_cuda_deps = "rules_cuda_deps")
+load("@rules_cuda//cuda/private:toolchain.bzl", _find_cuda_toolchain = "find_cuda_toolchain")
+load("@rules_cuda//cuda/private:action_names.bzl", "CUDA_COMPILE")
+load("@rules_cuda//cuda/private:cuda_helper.bzl", _cuda_helper = "cuda_helper")
+register_detected_cuda_toolchains = _register_detected_cuda_toolchains
+rules_cuda_deps = _rules_cuda_deps
+find_cuda_toolchain = _find_cuda_toolchain
+CUDA_COMPILE_ACTION_NAME = CUDA_COMPILE
+cuda_helper = _cuda_helper
+"""
+
+_empty_config = """
+def rules_cuda_deps():
+    return
+def register_detected_cuda_toolchains():
+    return
+def find_cuda_toolchain():
+    return
+CUDA_COMPILE_ACTION_NAME=""
+def cuda_helper():
+    return
+"""
 
 def _config_compdb_repository_impl(rctx):
+    build_file_content = ""
+
+    if rctx.attr.cuda_enable:
+        build_file_content += _cuda_config
+    else:
+        build_file_content += _empty_config
+
+    build_file_content += "global_filter_flags = %s\ncuda_enable = %s\n" % (rctx.attr.global_filter_flags, rctx.attr.cuda_enable)
+
     rctx.file("BUILD.bazel", "")
-    rctx.file("config.bzl", "global_filter_flags = %s\ncuda_enable = %s\n" % (rctx.attr.global_filter_flags, rctx.attr.cuda_enable))
+    rctx.file("config.bzl", build_file_content)
 
 config_compdb_repository = repository_rule(
     implementation = _config_compdb_repository_impl,
@@ -39,6 +73,20 @@ config_compdb_repository = repository_rule(
 def config_compdb(**kwargs):
     cuda_enable = kwargs.pop("cuda_enable", False)
     if cuda_enable:
-        rules_cuda_deps()
-        register_detected_cuda_toolchains()
+        maybe(
+            name = "bazel_skylib",
+            repo_rule = http_archive,
+            sha256 = "d847b08d6702d2779e9eb399b54ff8920fa7521dc45e3e53572d1d8907767de7",
+            strip_prefix = "bazel-skylib-2a87d4a62af886fb320883aba102255aba87275e",
+            urls = ["https://github.com/bazelbuild/bazel-skylib/archive/2a87d4a62af886fb320883aba102255aba87275e.tar.gz"],
+        )
+
+        maybe(
+            name = "rules_cuda",
+            repo_rule = http_archive,
+            sha256 = "a10a7efbf886a42f5c849dd515c22b72a58d37fdd8ee1436327c47f525e70f26",
+            strip_prefix = "rules_cuda-19f91525682511a2825037e3ac568cba22329733",
+            urls = ["https://github.com/cloudhan/rules_cuda/archive/19f91525682511a2825037e3ac568cba22329733.zip"],
+        )
+
     config_compdb_repository(name = "com_grail_bazel_config_compdb", cuda_enable = cuda_enable, **kwargs)
