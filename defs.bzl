@@ -45,7 +45,7 @@ def _compilation_database_impl(ctx):
         content = content.replace(flag, "")
 
     # Replace msvc compilation command to clang.
-    content.replace("/std:", "-std=")
+    content = content.replace("/std:", "-std=")
 
     # Format json.
     content = ",\n".join(content.split(","))
