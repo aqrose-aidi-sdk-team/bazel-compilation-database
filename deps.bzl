@@ -13,15 +13,24 @@
 # limitations under the License.
 
 load("@com_grail_bazel_compdb//:tools.bzl", "setup_tools")
-load("@bazel_tools//tools/build_defs/repo:utils.bzl", "maybe")
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+load("@bazel_tools//tools/build_defs/repo:utils.bzl", "maybe")
 
 def bazel_compdb_deps():
     setup_tools()
 
     maybe(
+        name = "bazel_skylib",
+        repo_rule = http_archive,
+        sha256 = "d847b08d6702d2779e9eb399b54ff8920fa7521dc45e3e53572d1d8907767de7",
+        strip_prefix = "bazel-skylib-2a87d4a62af886fb320883aba102255aba87275e",
+        urls = ["https://github.com/bazelbuild/bazel-skylib/archive/2a87d4a62af886fb320883aba102255aba87275e.tar.gz"],
+    )
+
+    maybe(
         name = "rules_cuda",
         repo_rule = http_archive,
-        sha256 = "99914664a13dd441837fba8fceb07a125a945e4a750facbbfe85a8ec1fbd9c3c",
-        urls = ["https://github.com/cloudhan/rules_cuda/archive/6f05e4d11b06ee542509e5ec65554118063351bf.tar.gz"],
+        sha256 = "a10a7efbf886a42f5c849dd515c22b72a58d37fdd8ee1436327c47f525e70f26",
+        strip_prefix = "rules_cuda-19f91525682511a2825037e3ac568cba22329733",
+        urls = ["https://github.com/cloudhan/rules_cuda/archive/19f91525682511a2825037e3ac568cba22329733.zip"],
     )

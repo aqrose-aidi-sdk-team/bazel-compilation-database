@@ -15,13 +15,8 @@
 load("@rules_cuda//cuda:deps.bzl", "register_detected_cuda_toolchains", "rules_cuda_deps")
 
 def _config_compdb_repository_impl(rctx):
-    if rctx.attr.cuda_enable:
-        rules_cuda_deps()
-        register_detected_cuda_toolchains()
-
     rctx.file("BUILD.bazel", "")
-    rctx.file("config.bzl", "global_filter_flags = %s" % rctx.attr.global_filter_flags)
-    rctx.file("config.bzl", "cuda_enable = %s" % rctx.attr.cuda_enable)
+    rctx.file("config.bzl", "global_filter_flags = %s\ncuda_enable = %s\n" % (rctx.attr.global_filter_flags, rctx.attr.cuda_enable))
 
 config_compdb_repository = repository_rule(
     implementation = _config_compdb_repository_impl,
@@ -42,4 +37,8 @@ config_compdb_repository = repository_rule(
 )
 
 def config_compdb(**kwargs):
-    config_compdb_repository(name = "com_grail_bazel_config_compdb", **kwargs)
+    cuda_enable = kwargs.pop("cuda_enable", False)
+    if cuda_enable:
+        rules_cuda_deps()
+        register_detected_cuda_toolchains()
+    config_compdb_repository(name = "com_grail_bazel_config_compdb", cuda_enable = cuda_enable, **kwargs)

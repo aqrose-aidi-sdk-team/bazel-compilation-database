@@ -37,15 +37,15 @@ def _compilation_database_impl(ctx):
     content = json.encode(compilation_db.to_list())
     content = content.replace("__EXEC_ROOT__", exec_root)
 
-    filter_flags = ctx.attr.filter_flags
+    filter_flags = []
     filter_flags.extend(global_filter_flags)
+    filter_flags.extend(ctx.attr.filter_flags)
 
     for flag in filter_flags:
         content = content.replace(flag, "")
 
-    # For windows, replace msvc compilation command to clang.
-    if ctx.os.name.lower().startswith("windows") == True:
-        content.replace("/std:", "-std=")
+    # Replace msvc compilation command to clang.
+    content.replace("/std:", "-std=")
 
     # Format json.
     content = ",\n".join(content.split(","))
