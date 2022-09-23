@@ -49,7 +49,7 @@ def _compilation_database_impl(ctx):
     content = content.replace("/std:", "-std=")
 
     # Format json.
-    content = ",\n".join(content.split(","))
+    content = "},\n".join(content.split("},"))
     content = content.replace("[", "[\n")
     content = content.replace("]", "\n]\n")
 

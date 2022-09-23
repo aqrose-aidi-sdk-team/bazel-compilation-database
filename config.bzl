@@ -17,26 +17,45 @@ load("@bazel_tools//tools/build_defs/repo:utils.bzl", "maybe")
 
 _cuda_config = """
 load("@rules_cuda//cuda:deps.bzl", _register_detected_cuda_toolchains = "register_detected_cuda_toolchains", _rules_cuda_deps = "rules_cuda_deps")
-load("@rules_cuda//cuda/private:toolchain.bzl", _find_cuda_toolchain = "find_cuda_toolchain")
-load("@rules_cuda//cuda/private:action_names.bzl", "CUDA_COMPILE")
+load("@rules_cuda//cuda/private:toolchain.bzl", _find_cuda_toolchain = "find_cuda_toolchain", _use_cuda_toolchain = "use_cuda_toolchain")
+load("@rules_cuda//cuda/private:rules/common.bzl", _ALLOW_CUDA_HDRS = "ALLOW_CUDA_HDRS", _ALLOW_CUDA_SRCS = "ALLOW_CUDA_SRCS")
 load("@rules_cuda//cuda/private:cuda_helper.bzl", _cuda_helper = "cuda_helper")
+load("@bazel_skylib//lib:paths.bzl", _paths = "paths")
+load("@bazel_skylib//rules:common_settings.bzl", _BuildSettingInfo = "BuildSettingInfo")
+load("@rules_cuda//cuda/private:providers.bzl", _CudaArchsInfo = "CudaArchsInfo", _CudaInfo = "CudaInfo")
+load("@rules_cuda//cuda/private:action_names.bzl", _ACTION_NAMES = "ACTION_NAMES")
+load("@rules_cuda//cuda/private:toolchain_config_lib.bzl", _config_helper = "config_helper", _unique = "unique")
 register_detected_cuda_toolchains = _register_detected_cuda_toolchains
 rules_cuda_deps = _rules_cuda_deps
 find_cuda_toolchain = _find_cuda_toolchain
-CUDA_COMPILE_ACTION_NAME = CUDA_COMPILE
+use_cuda_toolchain = "@rules_cuda" + ''.join(_use_cuda_toolchain())
+ALLOW_CUDA_HDRS = _ALLOW_CUDA_HDRS
+ALLOW_CUDA_SRCS = _ALLOW_CUDA_SRCS
 cuda_helper = _cuda_helper
+paths = _paths
+BuildSettingInfo = _BuildSettingInfo
+CudaArchsInfo = _CudaArchsInfo
+CudaInfo = _CudaInfo
+ACTION_NAMES = _ACTION_NAMES
+unique = _unique
+config_helper = _config_helper
 """
 
 _empty_config = """
-def rules_cuda_deps():
-    return
-def register_detected_cuda_toolchains():
-    return
-def find_cuda_toolchain():
-    return
-CUDA_COMPILE_ACTION_NAME=""
-def cuda_helper():
-    return
+register_detected_cuda_toolchains = ""
+rules_cuda_deps = ""
+find_cuda_toolchain = ""
+use_cuda_toolchain = ""
+ALLOW_CUDA_HDRS = ""
+ALLOW_CUDA_SRCS = ""
+cuda_helper = ""
+paths = ""
+BuildSettingInfo = ""
+CudaArchsInfo = ""
+CudaInfo = ""
+ACTION_NAMES = "”
+unique = ""
+config_helper = ""
 """
 
 def _config_compdb_repository_impl(rctx):

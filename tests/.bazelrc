@@ -13,4 +13,4 @@ build:cuda --cuda_archs=sm_60;sm_75;sm_86
 
 build:cuda --cuda_copts=-std=c++17,-extended-lambda,-Xcudafe="--diag_suppress=unsigned_compare_with_zero",-Xcompiler=/std:c++17,-Xcompiler=/utf-8,-Xcompiler=/Zc:preprocessor
 
-<!-- build --config=cuda -->
+build --config=cuda
