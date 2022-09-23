@@ -34,6 +34,7 @@ def _compilation_database_impl(ctx):
 
     exec_root = ctx.attr.output_base + "/execroot/" + ctx.workspace_name
 
+    # to_list() will return a list of the elements, without duplicates.
     content = json.encode(compilation_db.to_list())
     content = content.replace("__EXEC_ROOT__", exec_root)
 
