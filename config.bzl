@@ -134,9 +134,9 @@ def config_compdb(**kwargs):
         maybe(
             name = "rules_cuda",
             repo_rule = http_archive,
-            sha256 = "ec9740c06c733a190b4dec78644e11f12ef54101b34e7c4146b21580914c8de3",
-            strip_prefix = "rules_cuda-0c32b04d8af865182a3b6367c1bdd051a699c7de",
-            urls = ["https://github.com/bazel-contrib/rules_cuda/archive/0c32b04d8af865182a3b6367c1bdd051a699c7de.zip"],
+            sha256 = "82bdcf36d2fa1b8d889c3f8478ea5d3088473806a09727cd62ce63103c2cba9f",
+            strip_prefix = "rules_cuda-f90d8a1135d30f9d8a3ad77876a4bc021314f6f6",
+            urls = ["https://github.com/bazel-contrib/rules_cuda/archive/f90d8a1135d30f9d8a3ad77876a4bc021314f6f6.zip"],
         )
 
     config_compdb_repository(name = "com_grail_bazel_config_compdb", cuda_enable = cuda_enable, **kwargs)
