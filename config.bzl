@@ -74,7 +74,45 @@ def _config_compdb_repository_impl(rctx):
     cuda_path = ""
 
     if rctx.attr.cuda_enable:
-        cuda_path = rctx.os.environ.get("CUDA_PATH", None)
+        cuda_path = rctx.attr.toolkit_path
+        system_cuda_path = None
+        if system_cuda_path == None:
+            system_cuda_path = rctx.os.environ.get("CUDA_PATH", None)
+        if system_cuda_path == None:
+            ptxas_path = rctx.which("ptxas")
+            if ptxas_path:
+                # ${CUDA_PATH}/bin/ptxas
+                system_cuda_path = str(ptxas_path.dirname.dirname)
+        if rctx.os.name.lower().startswith("windows") and rctx.attr.cuda_version != None:
+            if cuda_path == None and system_cuda_path != None:
+                system_cuda_dir = str(rctx.path(system_cuda_path).dirname)
+                cuda_path = system_cuda_dir + "/v" + rctx.attr.cuda_version
+                if not rctx.path(cuda_path).exists:
+                    cuda_path = None
+            if cuda_path == None:
+                cuda_default_prefix = "C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v"
+                cuda_path = cuda_default_prefix + rctx.attr.cuda_version
+                if not rctx.path(cuda_path).exists:
+                    cuda_path = None
+            if cuda_path == None:
+                print("cuda set version not support")
+        if rctx.os.name.startswith("linux") and rctx.attr.cuda_version != None:
+            if cuda_path == None and system_cuda_path != None:
+                # system cuda path /usr/local/cuda -> system cuda dir : /usr/local
+                system_cuda_dir = str(rctx.path(system_cuda_path).dirname)
+                cuda_path = system_cuda_dir + "/cuda-" + rctx.attr.cuda_version
+                if not rctx.path(cuda_path).exists:
+                    cuda_path = None
+            if cuda_path == None:
+                cuda_default_prefix = "/usr/local/cuda-"
+                cuda_path = cuda_default_prefix + rctx.attr.cuda_version
+                if not rctx.path(cuda_path).exists:
+                    print("cuda set version not support")
+                    cuda_path = None
+            if cuda_path == None:
+                print("cuda set version not support")
+        if cuda_path == None or cuda_path == "":
+            cuda_path = rctx.os.environ.get("CUDA_PATH", None)
         if cuda_path == None:
             ptxas_path = rctx.which("ptxas")
             if ptxas_path:
@@ -116,11 +154,13 @@ config_compdb_repository = repository_rule(
             default = False,
             doc = "Enable the cuda compiler.",
         ),
+        "cuda_version": attr.string(mandatory = False),
+        "toolkit_path": attr.string(mandatory = False),
     },
     doc = "To config compdb.",
 )
 
-def config_compdb(**kwargs):
+def config_compdb(toolkit_path = None, cuda_version = None, **kwargs):
     cuda_enable = kwargs.pop("cuda_enable", False)
     if cuda_enable:
         maybe(
@@ -134,9 +174,14 @@ def config_compdb(**kwargs):
         maybe(
             name = "rules_cuda",
             repo_rule = http_archive,
-            sha256 = "82bdcf36d2fa1b8d889c3f8478ea5d3088473806a09727cd62ce63103c2cba9f",
-            strip_prefix = "rules_cuda-f90d8a1135d30f9d8a3ad77876a4bc021314f6f6",
-            urls = ["https://github.com/bazel-contrib/rules_cuda/archive/f90d8a1135d30f9d8a3ad77876a4bc021314f6f6.zip"],
+            sha256 = "da87c8f2ac27ba9e82e33cf65c00de2cec1ed1689e051d8112b533a1a532410c",
+            strip_prefix = "rules_cuda-40521ea784ac8951a1a64a6dfdc2dbea7759ffee",
+            urls = ["https://github.com/aqrose-aidi-sdk-team/rules_cuda/archive/40521ea784ac8951a1a64a6dfdc2dbea7759ffee.zip"],
         )
 
-    config_compdb_repository(name = "com_grail_bazel_config_compdb", cuda_enable = cuda_enable, **kwargs)
+    config_compdb_repository(
+        name = "com_grail_bazel_config_compdb",
+        cuda_enable = cuda_enable, toolkit_path = toolkit_path,
+        cuda_version = cuda_version,
+        **kwargs
+    )
