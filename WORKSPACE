@@ -32,13 +32,9 @@ bazel_compdb_deps()
 
 http_archive(
     name = "rules_cuda",
-    sha256 = "a10a7efbf886a42f5c849dd515c22b72a58d37fdd8ee1436327c47f525e70f26",
-    strip_prefix = "rules_cuda-19f91525682511a2825037e3ac568cba22329733",
-    urls = ["https://github.com/cloudhan/rules_cuda/archive/19f91525682511a2825037e3ac568cba22329733.zip"],
+    sha256 = "ecc46dc42881f4589ab5d20d034b302775b9734fb47e1c9e2c132125c148226d",
+    strip_prefix = "rules_cuda-cab1fa2dd0e1f8489f566c91a5025856cf5ae572",
+    urls = ["https://github.com/bazel-contrib/rules_cuda/archive/cab1fa2dd0e1f8489f566c91a5025856cf5ae572.zip"],
 )
 
-load("@rules_cuda//cuda:deps.bzl", "register_detected_cuda_toolchains", "rules_cuda_deps")
 
-rules_cuda_deps()
-
-register_detected_cuda_toolchains()

@@ -16,7 +16,7 @@ load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 load("@bazel_tools//tools/build_defs/repo:utils.bzl", "maybe")
 
 _cuda_config = """
-load("@rules_cuda//cuda:deps.bzl", _register_detected_cuda_toolchains = "register_detected_cuda_toolchains", _rules_cuda_deps = "rules_cuda_deps")
+load("@rules_cuda//cuda:repositories.bzl", _register_detected_cuda_toolchains = "register_detected_cuda_toolchains", _rules_cuda_deps = "rules_cuda_dependencies")
 load("@rules_cuda//cuda/private:toolchain.bzl", _find_cuda_toolchain = "find_cuda_toolchain", _use_cuda_toolchain = "use_cuda_toolchain")
 load("@rules_cuda//cuda/private:rules/common.bzl", _ALLOW_CUDA_HDRS = "ALLOW_CUDA_HDRS", _ALLOW_CUDA_SRCS = "ALLOW_CUDA_SRCS")
 load("@rules_cuda//cuda/private:cuda_helper.bzl", _cuda_helper = "cuda_helper", )
@@ -134,9 +134,13 @@ def config_compdb(**kwargs):
         maybe(
             name = "rules_cuda",
             repo_rule = http_archive,
-            sha256 = "a10a7efbf886a42f5c849dd515c22b72a58d37fdd8ee1436327c47f525e70f26",
-            strip_prefix = "rules_cuda-19f91525682511a2825037e3ac568cba22329733",
-            urls = ["https://github.com/cloudhan/rules_cuda/archive/19f91525682511a2825037e3ac568cba22329733.zip"],
+            sha256 = "ecc46dc42881f4589ab5d20d034b302775b9734fb47e1c9e2c132125c148226d",
+            strip_prefix = "rules_cuda-cab1fa2dd0e1f8489f566c91a5025856cf5ae572",
+            urls = ["https://github.com/bazel-contrib/rules_cuda/archive/cab1fa2dd0e1f8489f566c91a5025856cf5ae572.zip"],
         )
 
-    config_compdb_repository(name = "com_grail_bazel_config_compdb", cuda_enable = cuda_enable, **kwargs)
+    config_compdb_repository(
+        name = "com_grail_bazel_config_compdb",
+        cuda_enable = cuda_enable,
+        **kwargs
+    )
