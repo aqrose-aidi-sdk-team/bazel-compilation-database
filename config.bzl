@@ -73,10 +73,8 @@ def _config_compdb_repository_impl(rctx):
 
     cuda_path = ""
 
-
     if rctx.attr.cuda_enable:
-        if cuda_path == None or cuda_path == "":
-            cuda_path = rctx.os.environ.get("CUDA_PATH", None)
+        cuda_path = rctx.os.environ.get("CUDA_PATH", None)
         if cuda_path == None:
             ptxas_path = rctx.which("ptxas")
             if ptxas_path:
