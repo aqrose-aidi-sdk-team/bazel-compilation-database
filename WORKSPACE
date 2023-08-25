@@ -32,13 +32,9 @@ bazel_compdb_deps()
 
 http_archive(
     name = "rules_cuda",
-    sha256 = "da87c8f2ac27ba9e82e33cf65c00de2cec1ed1689e051d8112b533a1a532410c",
-    strip_prefix = "rules_cuda-40521ea784ac8951a1a64a6dfdc2dbea7759ffee",
-    urls = ["https://github.com/aqrose-aidi-sdk-team/rules_cuda/archive/40521ea784ac8951a1a64a6dfdc2dbea7759ffee.zip"],
+    sha256 = "ecc46dc42881f4589ab5d20d034b302775b9734fb47e1c9e2c132125c148226d",
+    strip_prefix = "rules_cuda-cab1fa2dd0e1f8489f566c91a5025856cf5ae572",
+    urls = ["https://github.com/bazel-contrib/rules_cuda/archive/cab1fa2dd0e1f8489f566c91a5025856cf5ae572.zip"],
 )
 
-load("@rules_cuda//cuda:repositories.bzl", "register_detected_cuda_toolchains", "rules_cuda_dependencies")
 
-rules_cuda_dependencies()
-
-register_detected_cuda_toolchains()
