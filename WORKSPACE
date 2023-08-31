@@ -32,9 +32,7 @@ bazel_compdb_deps()
 
 http_archive(
     name = "rules_cuda",
-    sha256 = "ecc46dc42881f4589ab5d20d034b302775b9734fb47e1c9e2c132125c148226d",
-    strip_prefix = "rules_cuda-cab1fa2dd0e1f8489f566c91a5025856cf5ae572",
-    urls = ["https://github.com/bazel-contrib/rules_cuda/archive/cab1fa2dd0e1f8489f566c91a5025856cf5ae572.zip"],
+    sha256 = "388e2459737ff6e8f4474fcbea63a407d9ce61f4cd035dbf12f6834a0c12c49d",
+    strip_prefix = "rules_cuda-a1b57331ab081845a8696966b96c7f7de463eb99",
+    urls = ["https://github.com/bazel-contrib/rules_cuda/archive/a1b57331ab081845a8696966b96c7f7de463eb99.zip"],
 )
-
-
