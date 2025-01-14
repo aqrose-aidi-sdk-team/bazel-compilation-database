@@ -13,21 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-load("@rules_cuda//cuda:defs.bzl", "cuda_library")
 load("@com_grail_bazel_compdb//:defs.bzl", "compilation_database")
 load("@com_grail_bazel_output_base_util//:defs.bzl", "OUTPUT_BASE")
-
-cuda_library(
-    name = "example",
-    srcs = ["example.cu"],
-    hdrs = ["example.hpp"],
-    copts = ["-G"],
-    defines = [
-        "USE_CUDA",
-    ],
-    host_defines = ["USE_TEST"],
-    visibility = ["//:__pkg__"],
-)
 
 cc_library(
     name = "a",
