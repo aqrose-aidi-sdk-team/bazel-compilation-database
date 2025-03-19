@@ -134,7 +134,7 @@ def config_compdb(**kwargs):
         maybe(
             name = "rules_cuda",
             repo_rule = http_archive,
-            sha256 = "b066750579f33e93e9dc55b8ee2067b525d863c1ddcf09b47a6332c39f0701fb",
+            sha256 = "fe8d3d8ed52b9b433f89021b03e3c428a82e10ed90c72808cc4988d1f4b9d1b3",
             strip_prefix = "rules_cuda-v0.2.5",
             urls = ["https://github.com/bazel-contrib/rules_cuda/releases/download/v0.2.5/rules_cuda-v0.2.5.tar.gz"],
         )
