@@ -1,0 +1,56 @@
+# Copyright 2026 Aqrose Technology, Ltd.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+module(
+    name = "com_grail_bazel_compdb",
+    version = "0.0.1",
+)
+
+# Loaded by the generated @com_grail_bazel_config_compdb when CUDA is enabled.
+bazel_dep(name = "bazel_skylib", version = "1.7.1")
+
+# The extension generates the two machine- and caller-specific repos
+# (com_grail_bazel_config_compdb, com_grail_bazel_output_base_util). This
+# non-dev usage only makes them visible to this module's own .bzl files
+# (defs.bzl, aspects.bzl, deps.bzl); it carries no tags, so consuming this
+# module as a dependency adds nothing to the consumer's module graph beyond
+# bazel_skylib. The consumer configures the extension from its own MODULE.bazel.
+bazel_compdb = use_extension("//:extensions.bzl", "bazel_compdb")
+use_repo(
+    bazel_compdb,
+    "com_grail_bazel_config_compdb",
+    "com_grail_bazel_output_base_util",
+)
+
+# Everything below only configures this repository's own build and is dropped
+# when the module is consumed as a dependency: Bazel ignores dev_dependency
+# bazel_deps and dev_dependency extension usages of non-root modules,
+# so neither rules_cuda nor the `rules_cuda = "@rules_cuda..."`
+# label in the tag is ever resolved on behalf of a consumer. Consumers that
+# want CUDA declare their own rules_cuda and pass it to bazel_compdb.config().
+#
+# Pinned at 0.2.5, not 0.3.0: 0.3.0 renamed the toolkit repo and its tag
+# (cuda.local_toolchain/@local_cuda -> cuda.toolkit/@cuda). The rules_cuda APIs
+# this repository loads exist in both 0.2.x and 0.3.x.
+bazel_dep(name = "rules_cuda", version = "0.2.5", dev_dependency = True)
+
+bazel_compdb_dev = use_extension("//:extensions.bzl", "bazel_compdb", dev_dependency = True)
+bazel_compdb_dev.config(
+    cuda_enable = True,
+    global_filter_flags = [
+        "-ccbin",
+        "-gencode",
+    ],
+    rules_cuda = "@rules_cuda//cuda:defs.bzl",
+)
